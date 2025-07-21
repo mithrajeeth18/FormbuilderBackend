@@ -42,7 +42,9 @@ app.get("/forms/:id", async (req, res) => {
     res.status(404).json({ error: "Not found" });
   }
 });
-
+app.get("/", (req, res) => {
+  res.send("Backend is awake 🚀");
+});
 // Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
