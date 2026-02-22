@@ -4,7 +4,11 @@ const ApiError = require("../../utils/apiError");
 
 async function createForm(req, res, next) {
   try {
-    const saved = await formsService.createForm(req.body);
+    const saved = await formsService.createForm({
+      ownerId: req.user.id,
+      config: req.body,
+      status: "published",
+    });
     logInfo(`Form created: ${saved._id}`);
     return res.status(200).json({
       success: true,
@@ -20,7 +24,7 @@ async function createForm(req, res, next) {
 
 async function getFormById(req, res, next) {
   try {
-    const form = await formsService.findFormById(req.params.id);
+    const form = await formsService.findPublishedFormById(req.params.id);
     if (!form) {
       return next(new ApiError(404, "Form not found", "FORM_NOT_FOUND"));
     }

@@ -1,16 +1,19 @@
 const Form = require("./form.model");
 
-async function createForm(config) {
-  const newForm = new Form({ config });
+async function createForm({ ownerId, config, status = "published" }) {
+  const newForm = new Form({ ownerId, config, status });
   const saved = await newForm.save();
   return saved;
 }
 
-async function findFormById(id) {
-  return Form.findById(id);
+async function findPublishedFormById(id) {
+  return Form.findOne({
+    _id: id,
+    $or: [{ status: "published" }, { status: { $exists: false } }],
+  });
 }
 
 module.exports = {
   createForm,
-  findFormById,
+  findPublishedFormById,
 };
