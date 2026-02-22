@@ -1,25 +1,38 @@
 const formsService = require("./forms.service");
 const { logInfo, logError } = require("../../utils/logger");
+const ApiError = require("../../utils/apiError");
 
-async function createForm(req, res) {
+async function createForm(req, res, next) {
   try {
     const saved = await formsService.createForm(req.body);
-    res.json({ id: saved._id });
     logInfo(`Form created: ${saved._id}`);
+    return res.status(200).json({
+      success: true,
+      message: "Form created",
+      data: { id: saved._id },
+      id: saved._id,
+    });
   } catch (err) {
     logError("Failed to create form", err);
-    res.status(500).json({ error: "Failed to save form" });
+    return next(new ApiError(500, "Failed to save form", "FORM_CREATE_FAILED"));
   }
 }
 
-async function getFormById(req, res) {
+async function getFormById(req, res, next) {
   try {
     const form = await formsService.findFormById(req.params.id);
-    if (!form) return res.status(404).json({ error: "Not found" });
-    res.json({ form: form.config });
+    if (!form) {
+      return next(new ApiError(404, "Form not found", "FORM_NOT_FOUND"));
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Form fetched",
+      data: { form: form.config },
+      form: form.config,
+    });
   } catch (err) {
     logError("Failed to fetch form by id", err);
-    res.status(404).json({ error: "Not found" });
+    return next(new ApiError(404, "Form not found", "FORM_NOT_FOUND"));
   }
 }
 
