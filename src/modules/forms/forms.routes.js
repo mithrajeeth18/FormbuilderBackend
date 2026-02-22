@@ -3,6 +3,7 @@ const {
   createForm,
   getFormById,
   getMyForms,
+  getMyFormById,
   updateMyForm,
   publishMyForm,
 } = require("./forms.controller");
@@ -17,6 +18,7 @@ const {
 const router = express.Router();
 
 router.get("/mine", requireAuth, validate(validateGetMyFormsQuery), getMyForms);
+router.get("/:id/mine", requireAuth, validate(validateFormIdParam), getMyFormById);
 router.post("/", requireAuth, validate(validateCreateFormPayload), createForm);
 router.put("/:id", requireAuth, validate(validateFormIdParam), validate(validateCreateFormPayload), updateMyForm);
 router.post("/:id/publish", requireAuth, validate(validateFormIdParam), publishMyForm);

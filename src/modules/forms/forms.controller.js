@@ -1,4 +1,5 @@
 const formsService = require("./forms.service");
+const responsesService = require("../responses/responses.service");
 const { logInfo, logError } = require("../../utils/logger");
 const ApiError = require("../../utils/apiError");
 
@@ -55,13 +56,16 @@ async function getMyForms(req, res, next) {
       order,
     });
 
+    const formIds = forms.map((form) => form._id);
+    const responseCounts = await responsesService.countResponsesByFormIds(formIds);
+
     const items = forms.map((form) => ({
       id: String(form._id),
       status: form.status || "published",
       createdAt: form.createdAt,
       updatedAt: form.updatedAt,
       fieldCount: Array.isArray(form.config) ? form.config.length : 0,
-      responseCount: 0,
+      responseCount: responseCounts[String(form._id)] || 0,
     }));
 
     return res.status(200).json({
@@ -80,6 +84,36 @@ async function getMyForms(req, res, next) {
   } catch (err) {
     logError("Failed to fetch owner forms", err);
     return next(new ApiError(500, "Failed to fetch owner forms", "OWNER_FORMS_FETCH_FAILED"));
+  }
+}
+
+async function getMyFormById(req, res, next) {
+  try {
+    const form = await formsService.findOwnedFormDetailById({
+      formId: req.params.id,
+      ownerId: req.user.id,
+    });
+
+    if (!form) {
+      return next(new ApiError(404, "Form not found", "FORM_NOT_FOUND"));
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "My form fetched",
+      data: {
+        form: {
+          id: String(form._id),
+          status: form.status || "published",
+          config: form.config || [],
+          createdAt: form.createdAt,
+          updatedAt: form.updatedAt,
+        },
+      },
+    });
+  } catch (err) {
+    logError("Failed to fetch owner form by id", err);
+    return next(new ApiError(500, "Failed to fetch owner form", "OWNER_FORM_FETCH_FAILED"));
   }
 }
 
@@ -142,6 +176,7 @@ module.exports = {
   createForm,
   getFormById,
   getMyForms,
+  getMyFormById,
   updateMyForm,
   publishMyForm,
 };

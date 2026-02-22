@@ -14,8 +14,12 @@ function isPrimitive(value) {
 }
 
 function sanitizeSingleAnswer(value) {
+  if (value === undefined) {
+    return { valid: true, value: null };
+  }
+
   if (isPrimitive(value)) {
-    return value;
+    return { valid: true, value };
   }
 
   if (Array.isArray(value)) {

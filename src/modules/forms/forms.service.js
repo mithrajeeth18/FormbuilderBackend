@@ -65,6 +65,12 @@ async function findOwnedFormById({ formId, ownerId }) {
   return Form.findOne({ _id: formId, ownerId });
 }
 
+async function findOwnedFormDetailById({ formId, ownerId }) {
+  return Form.findOne({ _id: formId, ownerId })
+    .select("_id config status createdAt updatedAt")
+    .lean();
+}
+
 module.exports = {
   createForm,
   findPublishedFormById,
@@ -72,4 +78,5 @@ module.exports = {
   updateOwnedFormById,
   publishOwnedFormById,
   findOwnedFormById,
+  findOwnedFormDetailById,
 };
