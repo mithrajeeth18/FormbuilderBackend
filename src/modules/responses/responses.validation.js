@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 function isPlainObject(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -66,6 +68,43 @@ function sanitizeResponseAnswers(rawAnswers) {
   return { valid: true, value: sanitized };
 }
 
+function validateSubmitResponsePayload(req) {
+  const payload = req.body;
+
+  if (!isPlainObject(payload)) {
+    return {
+      valid: false,
+      message: "Request body must be an object",
+      errorCode: "INVALID_RESPONSE_BODY",
+    };
+  }
+
+  if (!isPlainObject(payload.answers)) {
+    return {
+      valid: false,
+      message: "Field 'answers' must be an object",
+      errorCode: "INVALID_ANSWERS_PAYLOAD",
+    };
+  }
+
+  return { valid: true };
+}
+
+function validateResponseFormIdParam(req) {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return {
+      valid: false,
+      message: "Invalid form id",
+      errorCode: "INVALID_FORM_ID",
+    };
+  }
+
+  return { valid: true };
+}
+
 module.exports = {
   sanitizeResponseAnswers,
+  validateSubmitResponsePayload,
+  validateResponseFormIdParam,
 };
