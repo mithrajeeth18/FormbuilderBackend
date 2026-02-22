@@ -49,6 +49,7 @@ const env = {
   GOOGLE_CLIENT_ID: required("GOOGLE_CLIENT_ID"),
   GOOGLE_CLIENT_SECRET: required("GOOGLE_CLIENT_SECRET"),
   GOOGLE_CALLBACK_URL: required("GOOGLE_CALLBACK_URL"),
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
   JSON_BODY_LIMIT: process.env.JSON_BODY_LIMIT || "1mb",
   RATE_LIMIT_WINDOW_MS: parsePositiveInt(
     process.env.RATE_LIMIT_WINDOW_MS,
