@@ -19,6 +19,15 @@ function parsePort(value) {
   return parsed;
 }
 
+function parsePositiveInt(value, defaultValue, fieldName) {
+  if (!value) return defaultValue;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(`Invalid ${fieldName}. ${fieldName} must be a positive integer.`);
+  }
+  return parsed;
+}
+
 function parseOrigins(value) {
   const origins = value
     .split(",")
@@ -40,6 +49,17 @@ const env = {
   GOOGLE_CLIENT_ID: required("GOOGLE_CLIENT_ID"),
   GOOGLE_CLIENT_SECRET: required("GOOGLE_CLIENT_SECRET"),
   GOOGLE_CALLBACK_URL: required("GOOGLE_CALLBACK_URL"),
+  JSON_BODY_LIMIT: process.env.JSON_BODY_LIMIT || "1mb",
+  RATE_LIMIT_WINDOW_MS: parsePositiveInt(
+    process.env.RATE_LIMIT_WINDOW_MS,
+    15 * 60 * 1000,
+    "RATE_LIMIT_WINDOW_MS"
+  ),
+  RATE_LIMIT_MAX_REQUESTS: parsePositiveInt(
+    process.env.RATE_LIMIT_MAX_REQUESTS,
+    300,
+    "RATE_LIMIT_MAX_REQUESTS"
+  ),
 };
 
 module.exports = env;
