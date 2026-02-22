@@ -32,7 +32,7 @@ async function getFormById(req, res, next) {
     });
   } catch (err) {
     logError("Failed to fetch form by id", err);
-    return next(new ApiError(404, "Form not found", "FORM_NOT_FOUND"));
+    return next(new ApiError(500, "Failed to fetch form", "FORM_FETCH_FAILED"));
   }
 }
 
