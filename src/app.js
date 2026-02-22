@@ -2,10 +2,20 @@ const express = require("express");
 const cors = require("cors");
 const routes = require("./routes");
 const notFound = require("./middlewares/notFound");
+const env = require("./config/env");
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || env.FRONTEND_ORIGINS.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS origin not allowed"));
+    },
+  })
+);
 app.use(express.json());
 
 app.use(routes);
