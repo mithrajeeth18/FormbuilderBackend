@@ -38,7 +38,58 @@ function validateFormIdParam(req) {
   return { valid: true };
 }
 
+function validateGetMyFormsQuery(req) {
+  const allowedSortBy = ["createdAt", "updatedAt", "status"];
+  const allowedOrder = ["asc", "desc"];
+
+  const page = req.query.page;
+  const limit = req.query.limit;
+  const sortBy = req.query.sortBy;
+  const order = req.query.order;
+
+  if (page !== undefined) {
+    const parsedPage = Number(page);
+    if (!Number.isInteger(parsedPage) || parsedPage <= 0) {
+      return {
+        valid: false,
+        message: "Query param 'page' must be a positive integer",
+        errorCode: "INVALID_PAGE",
+      };
+    }
+  }
+
+  if (limit !== undefined) {
+    const parsedLimit = Number(limit);
+    if (!Number.isInteger(parsedLimit) || parsedLimit <= 0 || parsedLimit > 100) {
+      return {
+        valid: false,
+        message: "Query param 'limit' must be an integer between 1 and 100",
+        errorCode: "INVALID_LIMIT",
+      };
+    }
+  }
+
+  if (sortBy !== undefined && !allowedSortBy.includes(sortBy)) {
+    return {
+      valid: false,
+      message: "Query param 'sortBy' must be one of: createdAt, updatedAt, status",
+      errorCode: "INVALID_SORT_BY",
+    };
+  }
+
+  if (order !== undefined && !allowedOrder.includes(order)) {
+    return {
+      valid: false,
+      message: "Query param 'order' must be 'asc' or 'desc'",
+      errorCode: "INVALID_ORDER",
+    };
+  }
+
+  return { valid: true };
+}
+
 module.exports = {
   validateCreateFormPayload,
   validateFormIdParam,
+  validateGetMyFormsQuery,
 };

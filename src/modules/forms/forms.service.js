@@ -13,7 +13,31 @@ async function findPublishedFormById(id) {
   });
 }
 
+async function findFormsByOwner({
+  ownerId,
+  page = 1,
+  limit = 10,
+  sortBy = "createdAt",
+  order = "desc",
+}) {
+  const skip = (page - 1) * limit;
+  const sortDirection = order === "asc" ? 1 : -1;
+
+  const [forms, total] = await Promise.all([
+    Form.find({ ownerId })
+      .select("_id status createdAt updatedAt config")
+      .sort({ [sortBy]: sortDirection })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Form.countDocuments({ ownerId }),
+  ]);
+
+  return { forms, total };
+}
+
 module.exports = {
   createForm,
   findPublishedFormById,
+  findFormsByOwner,
 };
