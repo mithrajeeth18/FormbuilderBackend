@@ -36,8 +36,35 @@ async function findFormsByOwner({
   return { forms, total };
 }
 
+async function updateOwnedFormById({ formId, ownerId, config }) {
+  return Form.findOneAndUpdate(
+    { _id: formId, ownerId },
+    {
+      $set: {
+        config,
+        status: "draft",
+      },
+    },
+    { new: true }
+  );
+}
+
+async function publishOwnedFormById({ formId, ownerId }) {
+  return Form.findOneAndUpdate(
+    { _id: formId, ownerId },
+    {
+      $set: {
+        status: "published",
+      },
+    },
+    { new: true }
+  );
+}
+
 module.exports = {
   createForm,
   findPublishedFormById,
   findFormsByOwner,
+  updateOwnedFormById,
+  publishOwnedFormById,
 };

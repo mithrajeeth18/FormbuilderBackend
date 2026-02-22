@@ -7,13 +7,13 @@ async function createForm(req, res, next) {
     const saved = await formsService.createForm({
       ownerId: req.user.id,
       config: req.body,
-      status: "published",
+      status: "draft",
     });
     logInfo(`Form created: ${saved._id}`);
     return res.status(200).json({
       success: true,
       message: "Form created",
-      data: { id: saved._id },
+      data: { id: saved._id, status: saved.status },
       id: saved._id,
     });
   } catch (err) {
@@ -83,8 +83,65 @@ async function getMyForms(req, res, next) {
   }
 }
 
+async function updateMyForm(req, res, next) {
+  try {
+    const updated = await formsService.updateOwnedFormById({
+      formId: req.params.id,
+      ownerId: req.user.id,
+      config: req.body,
+    });
+
+    if (!updated) {
+      return next(new ApiError(404, "Form not found", "FORM_NOT_FOUND"));
+    }
+
+    logInfo(`Form updated by owner: ${updated._id}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "Form updated as draft",
+      data: {
+        id: String(updated._id),
+        status: updated.status,
+      },
+    });
+  } catch (err) {
+    logError("Failed to update form", err);
+    return next(new ApiError(500, "Failed to update form", "FORM_UPDATE_FAILED"));
+  }
+}
+
+async function publishMyForm(req, res, next) {
+  try {
+    const published = await formsService.publishOwnedFormById({
+      formId: req.params.id,
+      ownerId: req.user.id,
+    });
+
+    if (!published) {
+      return next(new ApiError(404, "Form not found", "FORM_NOT_FOUND"));
+    }
+
+    logInfo(`Form published by owner: ${published._id}`);
+
+    return res.status(200).json({
+      success: true,
+      message: "Form published",
+      data: {
+        id: String(published._id),
+        status: published.status,
+      },
+    });
+  } catch (err) {
+    logError("Failed to publish form", err);
+    return next(new ApiError(500, "Failed to publish form", "FORM_PUBLISH_FAILED"));
+  }
+}
+
 module.exports = {
   createForm,
   getFormById,
   getMyForms,
+  updateMyForm,
+  publishMyForm,
 };
