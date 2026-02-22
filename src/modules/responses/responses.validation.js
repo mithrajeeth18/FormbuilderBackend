@@ -103,8 +103,59 @@ function validateResponseFormIdParam(req) {
   return { valid: true };
 }
 
+function validateResponseIdParam(req) {
+  const { responseId } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(responseId)) {
+    return {
+      valid: false,
+      message: "Invalid response id",
+      errorCode: "INVALID_RESPONSE_ID",
+    };
+  }
+
+  return { valid: true };
+}
+
+function validateGetResponsesQuery(req) {
+  const { page, limit, search } = req.query;
+
+  if (page !== undefined) {
+    const parsed = Number(page);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      return {
+        valid: false,
+        message: "Query param 'page' must be a positive integer",
+        errorCode: "INVALID_PAGE",
+      };
+    }
+  }
+
+  if (limit !== undefined) {
+    const parsed = Number(limit);
+    if (!Number.isInteger(parsed) || parsed <= 0 || parsed > 100) {
+      return {
+        valid: false,
+        message: "Query param 'limit' must be an integer between 1 and 100",
+        errorCode: "INVALID_LIMIT",
+      };
+    }
+  }
+
+  if (search !== undefined && typeof search !== "string") {
+    return {
+      valid: false,
+      message: "Query param 'search' must be a string",
+      errorCode: "INVALID_SEARCH",
+    };
+  }
+
+  return { valid: true };
+}
+
 module.exports = {
   sanitizeResponseAnswers,
   validateSubmitResponsePayload,
   validateResponseFormIdParam,
+  validateResponseIdParam,
+  validateGetResponsesQuery,
 };

@@ -44,7 +44,55 @@ async function countResponsesByFormIds(formIds) {
   return map;
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+async function findResponsesByForm({
+  formId,
+  ownerId,
+  page = 1,
+  limit = 20,
+  search = "",
+}) {
+  const skip = (page - 1) * limit;
+  const query = {
+    formId,
+    ownerId,
+  };
+
+  if (search) {
+    const safePattern = escapeRegExp(search.trim());
+    query.$or = [
+      { "submittedBy.email": { $regex: safePattern, $options: "i" } },
+      { "submittedBy.name": { $regex: safePattern, $options: "i" } },
+    ];
+  }
+
+  const [items, total] = await Promise.all([
+    Response.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .select("_id submittedBy createdAt answers")
+      .lean(),
+    Response.countDocuments(query),
+  ]);
+
+  return { items, total };
+}
+
+async function findResponseDetailById({ responseId, formId, ownerId }) {
+  return Response.findOne({
+    _id: responseId,
+    formId,
+    ownerId,
+  }).lean();
+}
+
 module.exports = {
   createResponse,
   countResponsesByFormIds,
+  findResponsesByForm,
+  findResponseDetailById,
 };

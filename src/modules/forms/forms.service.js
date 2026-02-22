@@ -61,10 +61,15 @@ async function publishOwnedFormById({ formId, ownerId }) {
   );
 }
 
+async function findOwnedFormById({ formId, ownerId }) {
+  return Form.findOne({ _id: formId, ownerId });
+}
+
 module.exports = {
   createForm,
   findPublishedFormById,
   findFormsByOwner,
   updateOwnedFormById,
   publishOwnedFormById,
+  findOwnedFormById,
 };

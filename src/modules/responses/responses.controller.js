@@ -53,6 +53,98 @@ async function submitFormResponse(req, res, next) {
   }
 }
 
+async function getFormResponses(req, res, next) {
+  try {
+    const form = await formsService.findOwnedFormById({
+      formId: req.params.id,
+      ownerId: req.user.id,
+    });
+
+    if (!form) {
+      return next(new ApiError(404, "Form not found", "FORM_NOT_FOUND"));
+    }
+
+    const page = Number(req.query.page || 1);
+    const limit = Number(req.query.limit || 20);
+    const search = typeof req.query.search === "string" ? req.query.search.trim() : "";
+
+    const { items, total } = await responsesService.findResponsesByForm({
+      formId: form._id,
+      ownerId: form.ownerId,
+      page,
+      limit,
+      search,
+    });
+
+    const summaries = items.map((item) => ({
+      id: String(item._id),
+      submittedBy: item.submittedBy,
+      submittedAt: item.createdAt,
+      answerCount: item.answers && typeof item.answers === "object" ? Object.keys(item.answers).length : 0,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      message: "Form responses fetched",
+      data: {
+        items: summaries,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit) || 1,
+        },
+      },
+    });
+  } catch (err) {
+    logError("Failed to fetch form responses", err);
+    return next(new ApiError(500, "Failed to fetch form responses", "FORM_RESPONSES_FETCH_FAILED"));
+  }
+}
+
+async function getFormResponseDetail(req, res, next) {
+  try {
+    const form = await formsService.findOwnedFormById({
+      formId: req.params.id,
+      ownerId: req.user.id,
+    });
+
+    if (!form) {
+      return next(new ApiError(404, "Form not found", "FORM_NOT_FOUND"));
+    }
+
+    const response = await responsesService.findResponseDetailById({
+      responseId: req.params.responseId,
+      formId: form._id,
+      ownerId: form.ownerId,
+    });
+
+    if (!response) {
+      return next(new ApiError(404, "Response not found", "RESPONSE_NOT_FOUND"));
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Response detail fetched",
+      data: {
+        response: {
+          id: String(response._id),
+          formId: String(response.formId),
+          submittedBy: response.submittedBy,
+          submittedAt: response.createdAt,
+          answers: response.answers,
+          metadata: response.metadata,
+        },
+      },
+    });
+  } catch (err) {
+    logError("Failed to fetch response detail", err);
+    return next(new ApiError(500, "Failed to fetch response detail", "RESPONSE_DETAIL_FETCH_FAILED"));
+  }
+}
+
 module.exports = {
   submitFormResponse,
+  getFormResponses,
+  getFormResponseDetail,
 };
