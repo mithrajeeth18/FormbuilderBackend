@@ -3,7 +3,7 @@ const { createForm, getFormById } = require("./forms.controller");
 
 const router = express.Router();
 
-router.post("/forms", createForm);
-router.get("/forms/:id", getFormById);
+router.post("/", createForm);
+router.get("/:id", getFormById);
 
 module.exports = router;

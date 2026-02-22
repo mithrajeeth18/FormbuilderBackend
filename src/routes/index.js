@@ -3,7 +3,8 @@ const formsRouter = require("../modules/forms/forms.routes");
 
 const router = express.Router();
 
-router.use(formsRouter);
+router.use("/forms", formsRouter);
+router.use("/api/forms", formsRouter);
 
 router.get("/", (req, res) => {
   res.send("Backend is awake 🚀");
